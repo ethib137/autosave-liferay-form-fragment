@@ -205,7 +205,6 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
 					<c:choose>
 						<c:when test="<%= ddmFormDisplayContext.isAutosaveEnabled() %>">
-							console.log('in here');
 							var instance = this;
 
 							var A = AUI();
