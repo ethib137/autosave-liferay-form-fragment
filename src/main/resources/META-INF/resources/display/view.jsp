@@ -27,7 +27,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 			<liferay-ui:message key="select-an-existing-form-or-add-a-form-to-be-displayed-in-this-application" />
 		</div>
 	</c:when>
-	<c:when test="<%= !ddmFormDisplayContext.hasViewPermission() %>">
+	<c:when test="<%= !ddmFormDisplayContext.hasAddFormInstanceRecordPermission() && !ddmFormDisplayContext.hasViewPermission() %>">
 		<div class="ddm-form-basic-info">
 			<div class="container-fluid-1280">
 				<clay:alert
@@ -205,6 +205,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
 					<c:choose>
 						<c:when test="<%= ddmFormDisplayContext.isAutosaveEnabled() %>">
+							console.log('in here');
 							var instance = this;
 
 							var A = AUI();
