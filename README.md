@@ -15,4 +15,16 @@ The jar file will be in `autosave.liferay.form.fragment-1.0.0.jar`.
 ### Deploy to Liferay
 ` $ ./gradlew deploy -Pauto.deploy.dir="/path/to/liferay/deploy"`
 
+### Debugging
+
+For a fragment to be applied it requires that you indicate the correct module and version to override in the bnd.bnd file.
+
+`Fragment-Host: com.liferay.dynamic.data.mapping.form.web;bundle-version="2.0.42"`
+
+If the module is not being applied to your instance as expected check which version of the fragment host is deployed by running the following command in your gogo shell.
+
+`lb com.liferay.dynamic.data.mapping.form.web;bundle-version`
+
+Update the bnd.bnd with the correct version and deploy the updated module.
+
 ## Issues & Questions Welcome
