@@ -27,7 +27,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 			<liferay-ui:message key="select-an-existing-form-or-add-a-form-to-be-displayed-in-this-application" />
 		</div>
 	</c:when>
-	<c:when test="<%= !ddmFormDisplayContext.hasAddFormInstanceRecordPermission() && !ddmFormDisplayContext.hasViewPermission() %>">
+	<c:when test="<%= !ddmFormDisplayContext.hasViewPermission() %>">
 		<div class="ddm-form-basic-info">
 			<div class="container-fluid-1280">
 				<clay:alert
@@ -153,10 +153,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
 						<div class="ddm-form-basic-info">
 							<div class="container-fluid-1280">
-								<div class="align-items-end d-flex row">
-									<h1 class="ddm-form-name"><%= HtmlUtil.escape(formInstance.getName(displayLocale)) %></h1>
-									<span class="font-weight-light font-italic ml-3" id="<portlet:namespace />savingStatus"></span>
-								</div>
+								<h1 class="ddm-form-name"><%= HtmlUtil.escape(formInstance.getName(displayLocale)) %></h1>
 
 								<%
 								String description = HtmlUtil.escape(formInstance.getDescription(displayLocale));
@@ -197,7 +194,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 						Liferay.fire(
 							'ddmFormView',
 							{
-								formId: '<%= formInstanceId %>',
+								formId: <%= formInstanceId %>,
 								title: '<%= HtmlUtil.escape(formInstance.getName(displayLocale)) %>'
 							}
 						);
@@ -205,15 +202,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
 					<c:choose>
 						<c:when test="<%= ddmFormDisplayContext.isAutosaveEnabled() %>">
-							var instance = this;
-
-							var A = AUI();
-
 							var <portlet:namespace />form;
-
-							var formStatus = $('#<portlet:namespace />savingStatus');
-
-							var <portlet:namespace />formValues;
 
 							<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="addFormInstanceRecord" var="autoSaveFormInstanceRecordURL">
 								<portlet:param name="autoSave" value="<%= Boolean.TRUE.toString() %>" />
@@ -221,41 +210,19 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 								<portlet:param name="preview" value="<%= String.valueOf(ddmFormDisplayContext.isPreview()) %>" />
 							</liferay-portlet:resourceURL>
 
-							var <portlet:namespace />autoSave = A.debounce(
-								function() {
-									formStatus.text('<liferay-ui:message key="saving-changes" />');
+							function <portlet:namespace />autoSave() {
+								const data = new URLSearchParams({
+									<portlet:namespace />formInstanceId: <%= formInstanceId %>,
+									<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
+								});
 
-									const data = new URLSearchParams({
-										<portlet:namespace />formInstanceId: <%= formInstanceId %>,
-										<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
-									});
-
-									Liferay.Util.fetch(
-										'<%= autoSaveFormInstanceRecordURL.toString() %>',
-										{
-											body: data,
-											method: 'POST'
-										}
-									).then(
-										function(response) {
-											formStatus.text('<liferay-ui:message key="changes-saved" />');
-										}
-									);
-								},
-								500,
-								instance
-							);
-
-							function <portlet:namespace />checkFormChange() {
-								var <portlet:namespace />newFormValues = JSON.stringify(<portlet:namespace />form.toJSON());
-
-								if (<portlet:namespace />newFormValues !== <portlet:namespace />formValues) {
-									formStatus.text('<liferay-ui:message key="unsaved-changes" />');
-
-									<portlet:namespace />formValues = <portlet:namespace />newFormValues;
-
-									<portlet:namespace />autoSave();
-								}
+								Liferay.Util.fetch(
+									'<%= autoSaveFormInstanceRecordURL.toString() %>',
+									{
+										body: data,
+										method: 'POST'
+									}
+								);
 							}
 
 							function <portlet:namespace />startAutoSave() {
@@ -263,9 +230,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 									clearInterval(<portlet:namespace />intervalId);
 								}
 
-								<portlet:namespace />formValues = JSON.stringify(<portlet:namespace />form.toJSON());
-
-								<portlet:namespace />intervalId = setInterval(<portlet:namespace />checkFormChange, 200);
+								<portlet:namespace />intervalId = setInterval(<portlet:namespace />autoSave, 60000);
 							}
 						</c:when>
 						<c:otherwise>
